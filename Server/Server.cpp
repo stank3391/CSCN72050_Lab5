@@ -60,9 +60,9 @@ int main()
 	//receives RxBuffer
 	char* RxBuffer = new char[MAXTRANSMITIONSIZE];						
 	recv(ConnectionSocket, (char*) RxBuffer, MAXTRANSMITIONSIZE, 0);
+
+	//Deserialize into TCPStruct
 	TCPStruct MyTCPStruct(RxBuffer);
-	//ContactInfo newContact(RxBuffer);
-	//newContact.print();
 	MyTCPStruct.printAll();
 	
 	closesocket(ConnectionSocket);	//closes incoming socket

@@ -8,7 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
+
+const std::string FILENAME = "CastOfCasaBlanca.txt";
 
 int main()
 {
@@ -36,45 +39,47 @@ int main()
 		WSACleanup();
 		return 0;
 	}
-	//Testing Data
-	TCPStruct newTCPStruct = TCPStruct();			//new
+	//Create the struct to hold the objects
+	TCPStruct newTCPStruct = TCPStruct();			
 
-	std::ifstream f("InputFile.txt");
+	//Open the file
+	std::ifstream f(FILENAME);
+	if (!f.is_open()) {
+		std::cerr << "Error opening file\n";
+		return 1; 
+	}
 
-	if (f.is_open())
-	{
-		while (!f.eof())
-		{
-			std::string ID;
-			std::string Name;
-			std::string Age;
-			std::getline(f, ID, ',');
-			std::getline(f, Name, ',');
-			std::getline(f, Age, ',');
-			ContactInfo newContact(std::ID, Name, 22);
+	//Parse File
+	if(f.is_open()) {
+		std::string line;
+		while (std::getline(f, line)) {
+			std::stringstream ss(line);
+			std::string data[3];
+
+			std::getline(ss, data[0], ',');				// ID
+			std::getline(ss, data[1], ',');				// Name
+			std::getline(ss, data[2], ',');				// Age
+
+			char Name[NAMELENGTH];
+			std::memcpy(Name, data[1].c_str(), NAMELENGTH);			//Convert string to char*, also helps ensures names longer than 20 are truncated
+			ContactInfo newContact(std::stoi(data[0]), Name, std::stoi(data[2]));
+			//newContact.print();
+			newTCPStruct.addContact(newContact);
 		}
 	}
 
-	char Name[20] = "SeanTank";
-	ContactInfo newContact(1234, Name, 22);
-	newContact.print();
-	newTCPStruct.addContact(newContact);			//new
-
-	char Name1[20] = "Not Sean Tank";
-	ContactInfo newContact1(5678, Name, 33);
-	newContact1.print();
-	newTCPStruct.addContact(newContact1);			//new
-
+	//newTCPStruct.printAll();
+	//Calculate buffer size
 	int sizeOfBuffer = newTCPStruct.getNumOfObjects() * sizeof ContactInfo;		//28*n
 	sizeOfBuffer += sizeof newTCPStruct.getNumOfObjects();						//size of int
-	char* TxBuffer = new char[sizeOfBuffer];		//Should be 28*n + 4
+	char* TxBuffer = new char[sizeOfBuffer];									//28*n + 4
+	
+	//Serialize the data before sending
 	newTCPStruct.serialize(TxBuffer);
 	
-	//char TxBuffer[sizeof ContactInfo];
-	//newContact.getData(TxBuffer);
-	//cout << TxBuffer[9];
 	send(ClientSocket, (char*) TxBuffer, sizeOfBuffer, 0);
 	
+	//Release the memory
 	delete[] TxBuffer;
 
 	//closes connection and socket

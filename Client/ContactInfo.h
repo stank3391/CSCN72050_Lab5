@@ -33,12 +33,11 @@ public:
 
 	void getData(char* Buffer) {
 		std::memcpy(Buffer, &ContactData.ID, sizeof(ContactData.ID));
-		//std::cout << "ContactData.ID:" << ContactData.ID << " - " << (int) Buffer[0] << (int) Buffer[1] << std::endl;
 		Buffer += sizeof(ContactData.ID);
 
 		std::memcpy(Buffer, ContactData.Name, NAMELENGTH);
-		Buffer += NAMELENGTH - 1; // Move buffer pointer past the copied name
-		Buffer[0] = '\0'; // Null-terminate the string
+		Buffer += NAMELENGTH - 1;
+		Buffer[0] = '\0';							// Null-terminate the string
 		Buffer++;
 
 		std::memcpy(Buffer, &ContactData.Age, sizeof(ContactData.Age));
